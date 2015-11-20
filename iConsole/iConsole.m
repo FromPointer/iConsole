@@ -13,8 +13,13 @@
 #import "iConsole.h"
 
 
+//
 #define EDITFIELD_HEIGHT 28
 #define ACTION_BUTTON_WIDTH 28
+
+
+//
+#define IC_MainWindow ([[iConsole sharedConsole] mainWindow])
 
 
 @interface iConsole()
@@ -23,15 +28,35 @@ UITextFieldDelegate,
 UIActionSheetDelegate
 >
 
-@property (nonatomic, strong) UITextView *consoleView;
+// control
+@property (nonatomic, strong) UITextView  *consoleView;
 @property (nonatomic, strong) UITextField *inputField;
-@property (nonatomic, strong) UIButton *actionButton;
+@property (nonatomic, strong) UIButton    *actionButton;
 
-@property(nonatomic, strong) UIColor *textColor;
-@property(nonatomic, assign) UIScrollViewIndicatorStyle indicatorStyle;
-@property(nonatomic, copy)   NSString *inputPlaceholderString;
+//
+@property (nonatomic, copy)   NSString *inputPlaceholderString;
+
+// log string
+@property (nonatomic, strong) NSString *infoString;
+@property (nonatomic, strong) NSMutableArray<NSString *> *logs;
+
+//
+- (void)saveSettings;
+- (void)showConsole;
+- (void)hideConsole;
+- (void)clearConsole;
+- (void)sendLogToEmail;
+- (void)resetLog;
 
 @end
+
+void iConsoleUncaughtExceptionHandler(NSException *exception) {
+    
+    [iConsole crash:@"%@", exception];
+    
+    [[iConsole sharedConsole] saveSettings];
+}
+
 
 @implementation iConsole
 
@@ -78,9 +103,25 @@ UIActionSheetDelegate
 
 
 - (void)_baseInit {
-    _textColor = [UIColor redColor];
+    
+    NSSetUncaughtExceptionHandler(&iConsoleUncaughtExceptionHandler);
+    
+    _enabled = YES;
+    
+    _backgroundColor = [UIColor blackColor];
+    _textColor = [UIColor whiteColor];
     _indicatorStyle = UIScrollViewIndicatorStyleDefault;
+    
     _inputPlaceholderString = @"please input keyword";
+    
+    _infoString = @"iConsole: copy from ****";
+    _logs = [NSMutableArray array];
+    
+    _touchesToShow = 3;
+    _enabledTouchesToShow = YES;
+    _enabledShakeToShow = YES;
+    
+    _logLevel = iConsoleLogInfo;
 }
 
 
@@ -170,27 +211,91 @@ UIActionSheetDelegate
 }
 
 
-#pragma mark - show/hidden
+#pragma mark - show/hide
 
-+ (void)showConsole {
++ (void)show {
+    [[iConsole sharedConsole] showConsole];
+}
+
++ (void)hide {
+    [[iConsole sharedConsole] hideConsole];
+}
+
++ (void)clear {
+    [[iConsole sharedConsole] clearConsole];
+}
+
+
+
+
+#pragma mark - private method
+
+- (void)sendLogToEmail {
     
 }
 
 
-+ (void)hideConsole {
+- (void)showConsole {
+    if (self.enabled) {
+        [self setConsoleText];
+        
+        
+        
+    }
+}
+
+
+- (void)hideConsole {
     
 }
 
 
-+ (void)clearConsole {
+- (void)clearConsole {
+    [[iConsole sharedConsole] setConsoleText];
+}
+
+
+- (void)resetLog {
+    if (self.logs == nil) {
+        self.logs = [NSMutableArray array];
+    }
+    [self.logs removeAllObjects];
+    
+    [self setConsoleText];
+}
+
+
+- (void)setConsoleText {
+    NSString *consoleString = _infoString;
+    NSUInteger touches = _touchesToShow;
+    
+    if (touches >0 && touches < 10) {
+        consoleString = [consoleString stringByAppendingFormat:@"\nSwipe down with %zd finger%@ to hide console", touches, (touches != 1) ? @"s" : @""];
+    } else {
+        consoleString = [consoleString stringByAppendingFormat:@"\nShake Device to hide console"];
+    }
+    consoleString = [consoleString stringByAppendingString:@"\n------------------------------------------------"];
+    consoleString = [consoleString stringByAppendingString:[[_logs arrayByAddingObject:@">"] componentsJoinedByString:@"\n"]];
+    
+    _consoleView.text = consoleString;
+    [_consoleView scrollRangeToVisible:NSMakeRange(consoleString.length, 0)];
+}
+
+
+- (void)saveSettings {
     
 }
 
 
-+ (void)sendLogToEmail {
-    
+- (UIWindow *)mainWindow {
+    UIWindow *mWindow = nil;
+    if ([[[UIApplication sharedApplication] delegate] respondsToSelector:@selector(window)]) {
+        mWindow =  [[UIApplication sharedApplication].delegate window];
+    } else {
+        mWindow = [[UIApplication sharedApplication] keyWindow];
+    }
+    return mWindow;
 }
-
 
 #pragma mark - logger
 
@@ -283,19 +388,18 @@ UIActionSheetDelegate
 #pragma mark - delegate for UIActionSheetDelegate
 
 - (void)actionSheetCancel:(UIActionSheet *)actionSheet {
-    [iConsole hideConsole];
+    [iConsole hide];
 }
-
 
 - (void)actionSheet:(UIActionSheet *)actionSheet didDismissWithButtonIndex:(NSInteger)buttonIndex {
     
     if (buttonIndex == actionSheet.destructiveButtonIndex) {
-        [iConsole clearConsole];
+        [iConsole clear];
     } else if (buttonIndex != actionSheet.cancelButtonIndex) {
         if (buttonIndex == 1) {
-            [iConsole sendLogToEmail];
+            [[iConsole sharedConsole] sendLogToEmail];
         } else {
-            [iConsole hideConsole];
+            [iConsole hide];
         }
     }
 }

@@ -22,7 +22,7 @@
 
 
 typedef NS_ENUM(NSUInteger, iConsoleLogLevel) {
-    iConsoleLogNone = 0,
+    iConsoleLogNone      = 0,
     iConsoleLogCrash     = 1,
     iConsoleLogError     = 2,
     iConsoleLogWarning   = 3,
@@ -39,9 +39,23 @@ typedef NS_ENUM(NSUInteger, iConsoleLogLevel) {
 @property (nonatomic, weak) id<iConsoleDelegate> delegate;
 
 
+
+// style
+@property (nonatomic, strong) UIColor *backgroundColor;
+@property (nonatomic, strong) UIColor *textColor;
+@property (nonatomic, assign) UIScrollViewIndicatorStyle indicatorStyle;
+
+// control activation
+@property (nonatomic, assign) NSUInteger touchesToShow;
+@property (nonatomic, assign) BOOL enabledTouchesToShow;
+@property (nonatomic, assign) BOOL enabledShakeToShow;
+
+
+
 + (iConsole *)sharedConsole;
-+ (void)showConsole;
-+ (void)hideConsole;
++ (void)show;
++ (void)hide;
++ (void)clear;
 
 
 #pragma mark - logger
