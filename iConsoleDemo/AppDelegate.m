@@ -7,8 +7,14 @@
 //
 
 #import "AppDelegate.h"
+#import "iConsole.h"
+#import "ViewController.h"
+
 
 @interface AppDelegate ()
+<
+iConsoleDelegate
+>
 
 @end
 
@@ -17,6 +23,16 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    [iConsole sharedConsole].delegate = self;
+    
+    self.window = [[iConsoleWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.backgroundColor = [UIColor redColor];
+    ViewController *rootVC = [[ViewController alloc] init];
+    
+    self.window.rootViewController = rootVC;
+    [self.window makeKeyAndVisible];
+                   
     return YES;
 }
 
@@ -40,6 +56,20 @@
 
 - (void)applicationWillTerminate:(UIApplication *)application {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+}
+
+- (void)handleConsoleCommand:(NSString *)command
+{
+    if ([command isEqualToString:@"version"])
+    {
+        [iConsole info:@"%@ version %@",
+         [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"],
+         [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleVersion"]];
+    }
+    else
+    {
+        [iConsole error:@"unrecognised command, try 'version' instead"];
+    }
 }
 
 @end
