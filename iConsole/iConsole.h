@@ -46,10 +46,15 @@ typedef NS_ENUM(NSUInteger, iConsoleLogLevel) {
 @property (nonatomic, assign) UIScrollViewIndicatorStyle indicatorStyle;
 
 // control activation
-@property (nonatomic, assign) NSUInteger touchesToShow;
+@property (nonatomic, assign) NSUInteger simulatorTouchesToShow;
+@property (nonatomic, assign) NSUInteger deviceTouchesToShow;
 @property (nonatomic, assign) BOOL enabledTouchesToShow;
-@property (nonatomic, assign) BOOL enabledShakeToShow;
+@property (nonatomic, assign) BOOL enabledSimulatorShakeToShow;
+@property (nonatomic, assign) BOOL enabledDeviceShakeToShow;
 
+@property (nonatomic, assign) BOOL saveToDisk;
+
+@property (nonatomic, copy) NSString *logSubmissionEmail;
 
 
 + (iConsole *)sharedConsole;
