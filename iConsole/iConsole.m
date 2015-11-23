@@ -569,7 +569,7 @@ void iConsoleUncaughtExceptionHandler(NSException *exception) {
 
 - (void)clearConsole {
     [self resetLog];
-    [[iConsole sharedConsole] setConsoleText];
+    [self setConsoleText];
 }
 
 
@@ -587,9 +587,12 @@ void iConsoleUncaughtExceptionHandler(NSException *exception) {
     
     if (touches >0 && touches < 10) {
         consoleString = [consoleString stringByAppendingFormat:@"\nSwipe down with %zd finger%@ to hide console", touches, (touches != 1) ? @"s" : @""];
-    } else {
+    }
+    
+    if (_enabledDeviceShakeToShow) {
         consoleString = [consoleString stringByAppendingFormat:@"\nShake Device to hide console"];
     }
+    
     consoleString = [consoleString stringByAppendingString:@"\n------------------------------------------------\n"];
     consoleString = [consoleString stringByAppendingString:[[_logs arrayByAddingObject:@">"] componentsJoinedByString:@"\n"]];
     
